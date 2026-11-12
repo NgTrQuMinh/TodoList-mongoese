@@ -1,6 +1,10 @@
 import 'dotenv/config.js';
 import express from 'express';
 import connectDB from './config/db.js';
+import router from './routes/index.js';
+import notFound from './middleware/404.js';
+import errorHandler from './middleware/errorHandler.js';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST_NAME = process.env.HOST_NAME || 'localhost';
@@ -8,9 +12,10 @@ const HOST_NAME = process.env.HOST_NAME || 'localhost';
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-    res.send('j1');
-});
+app.use('/api/v1', router);
+app.use(notFound);
+app.use(errorHandler);
+
 
 (async () => {
     try {
