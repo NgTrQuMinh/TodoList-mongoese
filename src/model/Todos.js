@@ -2,6 +2,12 @@ import mongoose from 'mongoose';
 
 const TodoSchema = new mongoose.Schema(
     {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+            index: true,
+        },
         title: {
             type: String,
             required: [true, 'Vui lòng nhập tiêu đề công việc'],

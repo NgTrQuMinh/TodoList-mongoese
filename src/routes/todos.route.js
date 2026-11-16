@@ -1,9 +1,12 @@
 import express from 'express';
 import * as TodosController from '../controller/TodosController.js';
 import { validate } from '../middleware/validate.js';
+import { protect } from '../middleware/auth.js';
 import { createTodoSchema, updateTodoSchema } from '../validators/todo.validation.js';
 
 const router = express.Router();
+
+router.use(protect);
 
 router.get('/', TodosController.getAllTodos);
 router.get('/:id', TodosController.getTodosById);

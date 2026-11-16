@@ -8,29 +8,31 @@ const validateObjectId = (id, entityName) => {
     }
 };
 
-export const getAll = async () => {
-    return Todo.find().sort({ createdAt: -1 }).select('-__v').lean().exec();
+const ownerFilter = (user) => (user.role === 'admin' ? {} : { user: user._id });
+
+export const getAll = async (user) => {
+    return Todo.find(ownerFilter(user)).sort({ createdAt: -1 }).select('-__v').lean().exec();
 };
 
-export const getById = async (id) => {
+export const getById = async (id, user) => {
     validateObjectId(id, 'Todo');
-    const todo = await Todo.findById(id).select('-__v').lean().exec();
+    const todo = await Todo.findOne({ _id: id, ...ownerFilter(user) }).select('-__v').lean().exec();
     if (!todo) throw new AppError('Không tìm thấy Todo', 404);
     return todo;
 };
 
-export const create = async (data) => {
+export const create = async (data, user) => {
     const { title, completed } = data;
-    const todo = await Todo.create({ title, completed });
-    return todo;
+    const todo = await Todo.create({ title, completed, user: user._id });
+    return todo.toObject({ versionKey: false });
 };
 
-export const update = async (id, data = {}) => {
+export const update = async (id, data, user) => {
     validateObjectId(id, 'Todo');
 
     const { title, completed } = data;
-    const todo = await Todo.findByIdAndUpdate(
-        id,
+    const todo = await Todo.findOneAndUpdate(
+        { _id: id, ...ownerFilter(user) },
         { $set: { title, completed } },
         { returnDocument: 'after', runValidators: true }
     ).select('-__v').lean().exec();
@@ -38,9 +40,9 @@ export const update = async (id, data = {}) => {
     return todo;
 };
 
-export const remove = async (id) => {
+export const remove = async (id, user) => {
     validateObjectId(id, 'Todo');
-    const todo = await Todo.findByIdAndDelete(id).select('-__v').lean().exec();
+    const todo = await Todo.findOneAndDelete({ _id: id, ...ownerFilter(user) }).select('-__v').lean().exec();
     if (!todo) throw new AppError('Không tìm thấy Todo để xóa', 404);
     return todo;
 };
